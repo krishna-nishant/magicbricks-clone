@@ -1,9 +1,6 @@
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
 import Property from './models/propertyModel.js';
-
-// Load environment variables
-dotenv.config();
+import { connectDB } from './config/config.js';
 
 // Mock property data
 const properties = [
@@ -252,9 +249,8 @@ const properties = [
 // Connect to MongoDB
 const seedDB = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log('Connected to MongoDB');
-
+    const db = await connectDB();
+    
     // Delete all existing properties
     await Property.deleteMany({});
     console.log('Deleted all existing properties');
@@ -264,7 +260,7 @@ const seedDB = async () => {
     console.log(`Successfully added ${properties.length} properties to the database`);
 
     // Close connection
-    mongoose.connection.close();
+    db.close();
   } catch (error) {
     console.error('Error seeding database:', error);
     process.exit(1);

@@ -1,19 +1,20 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import propertyRoutes from './routes/propertyRoutes.js';
-
-// Load environment variables
-dotenv.config();
+import config, { connectDB } from './config/config.js';
+import { startHealthCheckCron } from './utils/cronHealthCheck.js';
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
 // Routes
 app.use('/api/properties', propertyRoutes);
@@ -23,17 +24,14 @@ app.get('/', (req, res) => {
   res.send('MagicBricks API is running...');
 });
 
-// Connect to MongoDB and start server
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-    console.log('Connected to MongoDB');
-  })
-  .catch((error) => {
-    console.error('Failed to connect to MongoDB:', error.message);
-  });
+// Connect to database
+connectDB();
 
-export default app; 
+// Start the server
+app.listen(config.port, () => {
+  console.log(`Server running on port ${config.port}`);
+  
+  startHealthCheckCron();
+});
+
+export default app;
