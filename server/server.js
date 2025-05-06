@@ -31,7 +31,7 @@ connectDB();
 app.listen(config.port, () => {
   console.log(`Server running on port ${config.port}`);
   
-  startHealthCheckCron();
+  // startHealthCheckCron();
 });
 
 export default app;
